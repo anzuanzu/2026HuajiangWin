@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026開門紅 - 業務目標追蹤系統</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-trophy"></i> 2026開門紅 業務目標追蹤系統</h1>
+            <div class="date-info">
+                <span>目標期間：2026考核年度</span>
+                <button id="adminBtn" class="admin-btn" onclick="showAdminLogin()">
+                    <i class="fas fa-cog"></i> 系統管理
+                </button>
+            </div>
+        </header>
+
+        <!-- 整體統計 -->
+        <section class="overview-section">
+            <div class="stats-grid">
+                <div class="stat-card total">
+                    <h3>總目標金額</h3>
+                    <div class="amount" id="totalTarget">6,000萬</div>
+                </div>
+                <div class="stat-card current">
+                    <h3>已完成金額</h3>
+                    <div class="amount" id="totalAchieved">0萬</div>
+                </div>
+                <div class="stat-card remaining">
+                    <h3>剩餘目標</h3>
+                    <div class="amount" id="totalRemaining">6,000萬</div>
+                </div>
+                <div class="stat-card progress">
+                    <h3>達成率</h3>
+                    <div class="amount" id="totalProgress">0%</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 新增客戶表單 -->
+        <section class="add-customer-section">
+            <h2><i class="fas fa-user-plus"></i> 新增客戶資料</h2>
+            <form id="customerForm" class="customer-form">
+                <div class="form-group">
+                    <label for="customerName">客戶姓名：</label>
+                    <input type="text" id="customerName" required placeholder="請輸入客戶姓名">
+                </div>
+                
+                <div class="form-group">
+                    <label for="salesperson">負責業務：</label>
+                    <select id="salesperson" required>
+                        <option value="">請選擇業務</option>
+                        <option value="詹采榆">詹采榆</option>
+                        <option value="劉家昇">劉家昇</option>
+                        <option value="施雯晴">施雯晴</option>
+                        <option value="黃柏飛">黃柏飛</option>
+                        <option value="曹馨勻">曹馨勻</option>
+                        <option value="徐小凡">徐小凡</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="orderMonth">下單月份：</label>
+                    <select id="orderMonth" required>
+                        <option value="">請選擇月份</option>
+                        <option value="2025-12">2025年12月</option>
+                        <option value="2026-01">2026年1月</option>
+                        <option value="2026-02">2026年2月</option>
+                        <option value="2026-03">2026年3月</option>
+                        <option value="2026-04">2026年4月</option>
+                        <option value="2026-05">2026年5月</option>
+                        <option value="2026-06">2026年6月</option>
+                        <option value="2026-07">2026年7月</option>
+                        <option value="2026-08">2026年8月</option>
+                        <option value="2026-09">2026年9月</option>
+                        <option value="2026-10">2026年10月</option>
+                        <option value="2026-11">2026年11月</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="productType">商品類型：</label>
+                    <select id="productType" required>
+                        <option value="">請選擇商品類型</option>
+                        <option value="理財">理財</option>
+                        <option value="保險">保險</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="amount">金額(萬元)：</label>
+                    <input type="number" id="amount" required placeholder="請輸入金額" min="1" step="1">
+                </div>
+                
+                <button type="submit"><i class="fas fa-plus"></i> 新增客戶</button>
+            </form>
+        </section>
+
+        <!-- 業務目標表 -->
+        <section class="targets-section">
+            <h2><i class="fas fa-chart-line"></i> 各業務目標達成狀況</h2>
+            <div class="targets-grid" id="targetsGrid">
+                <!-- 將由 JavaScript 動態生成 -->
+            </div>
+        </section>
+
+        <!-- 客戶清單 -->
+        <section class="customers-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h2><i class="fas fa-users"></i> 客戶清單</h2>
+                <div>
+                    <button id="lockCustomerListBtn" onclick="lockCustomerList()" style="background: #e74c3c; padding: 8px 15px; font-size: 0.9em; margin-right: 10px; display: none;">
+                        <i class="fas fa-lock"></i> 鎖定清單
+                    </button>
+                    <button onclick="reloadData()" style="background: #28a745; padding: 8px 15px; font-size: 0.9em;">
+                        <i class="fas fa-refresh"></i> 重新載入數據
+                    </button>
+                </div>
+            </div>
+
+            <!-- 密碼驗證表單 -->
+            <div id="customerListPasswordForm" class="password-protection">
+                <div class="password-box">
+                    <i class="fas fa-lock" style="font-size: 3em; color: #3498db; margin-bottom: 15px;"></i>
+                    <h3>此區域需要密碼保護</h3>
+                    <p>請輸入密碼以檢視和修改客戶清單</p>
+                    <form onsubmit="verifyCustomerListPassword(event)">
+                        <div class="form-group">
+                            <input type="password" id="customerListPassword" placeholder="請輸入密碼" required style="text-align: center; font-size: 1.1em;">
+                        </div>
+                        <button type="submit"><i class="fas fa-unlock"></i> 解鎖</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 客戶清單內容（默認隱藏） -->
+            <div id="customerListContent" style="display: none;">
+            <div class="filters">
+                <select id="filterSalesperson">
+                    <option value="">所有業務</option>
+                    <option value="詹采榆">詹采榆</option>
+                    <option value="劉家昇">劉家昇</option>
+                    <option value="施雯晴">施雯晴</option>
+                    <option value="黃柏飛">黃柏飛</option>
+                    <option value="曹馨勻">曹馨勻</option>
+                    <option value="徐小凡">徐小凡</option>
+                </select>
+                
+                <select id="filterMonth">
+                    <option value="">所有月份</option>
+                    <option value="2025-12">2025年12月</option>
+                    <option value="2026-01">2026年1月</option>
+                    <option value="2026-02">2026年2月</option>
+                    <option value="2026-03">2026年3月</option>
+                    <option value="2026-04">2026年4月</option>
+                    <option value="2026-05">2026年5月</option>
+                    <option value="2026-06">2026年6月</option>
+                    <option value="2026-07">2026年7月</option>
+                    <option value="2026-08">2026年8月</option>
+                    <option value="2026-09">2026年9月</option>
+                    <option value="2026-10">2026年10月</option>
+                    <option value="2026-11">2026年11月</option>
+                </select>
+                
+                <select id="filterProduct">
+                    <option value="">所有商品</option>
+                    <option value="理財">理財</option>
+                    <option value="保險">保險</option>
+                </select>
+            </div>
+            
+            <div class="customer-list" id="customerList">
+                <!-- 將由 JavaScript 動態生成 -->
+            </div>
+            </div>
+        </section>
+
+        <!-- 開門紅累計統計 -->
+        <section class="cumulative-section">
+            <h2><i class="fas fa-calendar-alt"></i> 開門紅累計統計 (2025年12月 - 2026年2月)</h2>
+            <div class="month-stats">
+                <div class="month-card">
+                    <h3>2025年12月</h3>
+                    <div class="month-amount" id="december-total">0萬</div>
+                    <div class="month-breakdown">
+                        <span>理財：<span id="december-finance">0萬</span></span>
+                        <span>保險：<span id="december-insurance">0萬</span></span>
+                    </div>
+                </div>
+                <div class="month-card">
+                    <h3>2026年1月</h3>
+                    <div class="month-amount" id="january-total">0萬</div>
+                    <div class="month-breakdown">
+                        <span>理財：<span id="january-finance">0萬</span></span>
+                        <span>保險：<span id="january-insurance">0萬</span></span>
+                    </div>
+                </div>
+                <div class="month-card">
+                    <h3>2026年2月</h3>
+                    <div class="month-amount" id="february-total">0萬</div>
+                    <div class="month-breakdown">
+                        <span>理財：<span id="february-finance">0萬</span></span>
+                        <span>保險：<span id="february-insurance">0萬</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <h2><i class="fas fa-chart-bar"></i> 各月統計 (2026年3月 - 2026年11月)</h2>
+            <div class="month-stats">
+                <div class="month-card">
+                    <h3>2026年3月</h3>
+                    <div class="month-amount" id="march-total">0萬</div>
+                    <div class="month-breakdown">
+                        <span>理財：<span id="march-finance">0萬</span></span>
+                        <span>保險：<span id="march-insurance">0萬</span></span>
+                    </div>
+                </div>
+                <div class="month-card">
+                    <h3>2026年4月</h3>
+                    <div class="month-amount" id="april-total">0萬</div>
+                    <div class="month-breakdown">
+                        <span>理財：<span id="april-finance">0萬</span></span>
+                        <span>保險：<span id="april-insurance">0萬</span></span>
+                    </div>
+                </div>
+                <div class="month-card">
+                    <h3>2026年5月</h3>
+                    <div class="month-amount" id="may-total">0萬</div>
+                    <div class="month-breakdown">
+                        <span>理財：<span id="may-finance">0萬</span></span>
+                        <span>保險：<span id="may-insurance">0萬</span></span>
+                    </div>
+                </div>
+                <div class="month-card">
+                    <h3>2026年6月</h3>
+                    <div class="month-amount" id="june-total">0萬</div>
+                    <div class="month-breakdown">
+                        <span>理財：<span id="june-finance">0萬</span></span>
+                        <span>保險：<span id="june-insurance">0萬</span></span>
+                    </div>
+                </div>
+                <div class="month-card">
+                    <h3>2026年7月</h3>
+                    <div class="month-amount" id="july-total">0萬</div>
+                    <div class="month-breakdown">
+                        <span>理財：<span id="july-finance">0萬</span></span>
+                        <span>保險：<span id="july-insurance">0萬</span></span>
+                    </div>
+                </div>
+                <div class="month-card">
+                    <h3>2026年8月</h3>
+                    <div class="month-amount" id="august-total">0萬</div>
+                    <div class="month-breakdown">
+                        <span>理財：<span id="august-finance">0萬</span></span>
+                        <span>保險：<span id="august-insurance">0萬</span></span>
+                    </div>
+                </div>
+                <div class="month-card">
+                    <h3>2026年9月</h3>
+                    <div class="month-amount" id="september-total">0萬</div>
+                    <div class="month-breakdown">
+                        <span>理財：<span id="september-finance">0萬</span></span>
+                        <span>保險：<span id="september-insurance">0萬</span></span>
+                    </div>
+                </div>
+                <div class="month-card">
+                    <h3>2026年10月</h3>
+                    <div class="month-amount" id="october-total">0萬</div>
+                    <div class="month-breakdown">
+                        <span>理財：<span id="october-finance">0萬</span></span>
+                        <span>保險：<span id="october-insurance">0萬</span></span>
+                    </div>
+                </div>
+                <div class="month-card">
+                    <h3>2026年11月</h3>
+                    <div class="month-amount" id="november-total">0萬</div>
+                    <div class="month-breakdown">
+                        <span>理財：<span id="november-finance">0萬</span></span>
+                        <span>保險：<span id="november-insurance">0萬</span></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 編輯客戶模態框 -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>編輯客戶資料</h2>
+            <form id="editCustomerForm">
+                <input type="hidden" id="editCustomerId">
+                
+                <div class="form-group">
+                    <label for="editCustomerName">客戶姓名：</label>
+                    <input type="text" id="editCustomerName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editSalesperson">負責業務：</label>
+                    <select id="editSalesperson" required>
+                        <option value="詹采榆">詹采榆</option>
+                        <option value="劉家昇">劉家昇</option>
+                        <option value="施雯晴">施雯晴</option>
+                        <option value="黃柏飛">黃柏飛</option>
+                        <option value="曹馨勻">曹馨勻</option>
+                        <option value="徐小凡">徐小凡</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editOrderMonth">下單月份：</label>
+                    <select id="editOrderMonth" required>
+                        <option value="2025-12">2025年12月</option>
+                        <option value="2026-01">2026年1月</option>
+                        <option value="2026-02">2026年2月</option>
+                        <option value="2026-03">2026年3月</option>
+                        <option value="2026-04">2026年4月</option>
+                        <option value="2026-05">2026年5月</option>
+                        <option value="2026-06">2026年6月</option>
+                        <option value="2026-07">2026年7月</option>
+                        <option value="2026-08">2026年8月</option>
+                        <option value="2026-09">2026年9月</option>
+                        <option value="2026-10">2026年10月</option>
+                        <option value="2026-11">2026年11月</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editProductType">商品類型：</label>
+                    <select id="editProductType" required>
+                        <option value="理財">理財</option>
+                        <option value="保險">保險</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editAmount">金額(萬元)：</label>
+                    <input type="number" id="editAmount" required min="1" step="1">
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="submit"><i class="fas fa-save"></i> 保存</button>
+                    <button type="button" class="cancel-btn" onclick="closeEditModal()">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 管理員登入模態框 -->
+    <div id="adminLoginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAdminLogin()">&times;</span>
+            <h2><i class="fas fa-lock"></i> 管理員登入</h2>
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label for="adminPassword">管理員密碼：</label>
+                    <input type="password" id="adminPassword" required placeholder="請輸入管理員密碼">
+                </div>
+                <button type="submit"><i class="fas fa-sign-in-alt"></i> 登入</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 管理員介面模態框 -->
+    <div id="adminModal" class="modal admin-modal">
+        <div class="modal-content admin-content">
+            <div class="admin-header">
+                <h2><i class="fas fa-cog"></i> 系統管理</h2>
+                <span class="close" onclick="closeAdmin()">&times;</span>
+            </div>
+            
+            <div class="admin-tabs">
+                <button class="tab-btn active" onclick="showTab('rmManagement')">
+                    <i class="fas fa-users"></i> RM管理
+                </button>
+                <button class="tab-btn" onclick="showTab('batchEdit')">
+                    <i class="fas fa-edit"></i> 批量編輯
+                </button>
+                <button class="tab-btn" onclick="showTab('batchAdd')">
+                    <i class="fas fa-plus-circle"></i> 批量新增
+                </button>
+            </div>
+            
+            <!-- RM管理標籤 -->
+            <div id="rmManagement" class="tab-content active">
+                <h3>RM姓名及目標管理</h3>
+                <div class="rm-list" id="rmList">
+                    <!-- 將由 JavaScript 動態生成 -->
+                </div>
+                <div class="add-rm-section">
+                    <h4>新增RM</h4>
+                    <form id="addRmForm">
+                        <div class="form-group">
+                            <label for="rmName">RM姓名：</label>
+                            <input type="text" id="rmName" required placeholder="請輸入RM姓名">
+                        </div>
+                        <div class="form-group">
+                            <label for="rmTarget">目標金額(萬)：</label>
+                            <input type="number" id="rmTarget" required placeholder="請輸入目標金額" min="1" step="1">
+                        </div>
+                        <button type="submit"><i class="fas fa-plus"></i> 新增RM</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 批量編輯標籤 -->
+            <div id="batchEdit" class="tab-content">
+                <h3>批量編輯客戶資料</h3>
+                <div class="instructions-box">
+                    <h4><i class="fas fa-info-circle"></i> 操作說明</h4>
+                    <ol>
+                        <li>從下方下拉選單選擇一位理專</li>
+                        <li>系統會列出該理專名下所有客戶</li>
+                        <li>勾選要操作的客戶（可使用「全選」）</li>
+                        <li>選擇批量操作類型：轉移理專、變更商品類型、變更月份或批量刪除</li>
+                        <li>若為轉移/變更操作，需再選擇目標值</li>
+                        <li>點擊「執行」按鈕完成操作</li>
+                    </ol>
+                </div>
+                <div class="batch-edit-section">
+                    <div class="batch-filter">
+                        <div class="form-group">
+                            <label for="batchRmSelect">選擇理專：</label>
+                            <select id="batchRmSelect" onchange="loadBatchCustomers()">
+                                <option value="">請選擇理專</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="batch-actions" id="batchActions" style="display: none;">
+                        <div class="batch-action-bar">
+                            <label class="batch-select-all">
+                                <input type="checkbox" id="batchSelectAll" onchange="toggleBatchSelectAll()"> 全選
+                            </label>
+                            <span id="batchSelectedCount">已選擇 0 筆</span>
+                        </div>
+                        <div class="batch-action-buttons">
+                            <select id="batchAction">
+                                <option value="">選擇批量操作</option>
+                                <option value="transferRm">轉移至其他理專</option>
+                                <option value="changeProduct">變更商品類型</option>
+                                <option value="changeMonth">變更月份</option>
+                                <option value="batchDelete">批量刪除</option>
+                            </select>
+                            <select id="batchActionValue" style="display: none;"></select>
+                            <button class="batch-execute-btn" onclick="executeBatchAction()">
+                                <i class="fas fa-check"></i> 執行
+                            </button>
+                        </div>
+                    </div>
+                    <div class="batch-customer-list" id="batchCustomerList">
+                        <p style="text-align: center; color: #7f8c8d; padding: 20px;">請先選擇理專</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 批量新增標籤 -->
+            <div id="batchAdd" class="tab-content">
+                <h3>批量新增客戶清單</h3>
+                <div class="instructions-box">
+                    <h4><i class="fas fa-info-circle"></i> 操作說明</h4>
+                    <p><strong>方式一：手動輸入</strong></p>
+                    <ol>
+                        <li>先從下方選擇理專姓名</li>
+                        <li>點擊「新增一列」按鈕增加客戶欄位</li>
+                        <li>填寫每位客戶的姓名、月份、商品類型及金額</li>
+                        <li>可新增多列一次輸入多位客戶</li>
+                        <li>確認無誤後點擊「批量送出」</li>
+                    </ol>
+                    <p><strong>方式二：上傳 CSV 檔案</strong></p>
+                    <ol>
+                        <li>先從下方選擇理專姓名</li>
+                        <li>準備符合格式的 CSV 檔案（見下方格式說明）</li>
+                        <li>點擊「選擇檔案」上傳 CSV</li>
+                        <li>系統會自動解析並顯示預覽</li>
+                        <li>確認無誤後點擊「批量送出」</li>
+                    </ol>
+                    <div class="file-format-info">
+                        <h4><i class="fas fa-file-csv"></i> CSV 檔案格式說明</h4>
+                        <p>檔案須為 <strong>UTF-8 編碼的 CSV 格式</strong>（可用 Excel 另存新檔選擇 CSV UTF-8），欄位以半形逗號分隔：</p>
+                        <table class="format-table">
+                            <thead>
+                                <tr><th>欄位</th><th>說明</th><th>範例</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>客戶姓名</td><td>必填，中英文皆可</td><td>王小明</td></tr>
+                                <tr><td>月份</td><td>必填，格式 YYYY-MM</td><td>2026-03</td></tr>
+                                <tr><td>商品類型</td><td>必填，「理財」或「保險」</td><td>理財</td></tr>
+                                <tr><td>金額(萬)</td><td>必填，正整數</td><td>500</td></tr>
+                            </tbody>
+                        </table>
+                        <p class="format-example"><strong>範例檔案內容：</strong></p>
+                        <pre class="csv-example">客戶姓名,月份,商品類型,金額(萬)
+王小明,2026-03,理財,500
+李美麗,2026-04,保險,300
+張大衛,2026-03,理財,1000</pre>
+                        <p class="format-note"><i class="fas fa-exclamation-triangle"></i> 第一列為標題列（會自動跳過），資料從第二列開始。</p>
+                    </div>
+                </div>
+
+                <div class="batch-add-section">
+                    <div class="form-group">
+                        <label for="batchAddRmSelect">選擇理專：</label>
+                        <select id="batchAddRmSelect">
+                            <option value="">請選擇理專</option>
+                        </select>
+                    </div>
+
+                    <div class="batch-add-methods">
+                        <div class="batch-add-upload">
+                            <h4><i class="fas fa-upload"></i> 上傳 CSV 檔案</h4>
+                            <div class="upload-area" id="uploadArea">
+                                <input type="file" id="csvFileInput" accept=".csv" onchange="handleCsvUpload(event)" style="display:none;">
+                                <button class="upload-btn" onclick="document.getElementById('csvFileInput').click()">
+                                    <i class="fas fa-cloud-upload-alt"></i> 選擇 CSV 檔案
+                                </button>
+                                <span id="uploadFileName" style="margin-left:10px; color:#7f8c8d;"></span>
+                            </div>
+                        </div>
+
+                        <div class="batch-add-manual">
+                            <h4><i class="fas fa-keyboard"></i> 手動輸入</h4>
+                            <button class="add-row-btn" onclick="addBatchRow()">
+                                <i class="fas fa-plus"></i> 新增一列
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="batchAddTableWrapper" style="display:none;">
+                        <table class="batch-add-table">
+                            <thead>
+                                <tr>
+                                    <th>客戶姓名</th>
+                                    <th>月份</th>
+                                    <th>商品類型</th>
+                                    <th>金額(萬)</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batchAddTableBody">
+                            </tbody>
+                        </table>
+                        <div class="batch-add-footer">
+                            <span id="batchAddCount">共 0 筆</span>
+                            <div>
+                                <button class="batch-clear-btn" onclick="clearBatchAddTable()">
+                                    <i class="fas fa-eraser"></i> 清空
+                                </button>
+                                <button class="batch-submit-btn" onclick="submitBatchAdd()">
+                                    <i class="fas fa-paper-plane"></i> 批量送出
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot, where } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+        
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBIIb3ZrabmNfLdKurCGZATkyfDEbxJPUI",
+            authDomain: "huajiangwin.firebaseapp.com",
+            projectId: "huajiangwin",
+            storageBucket: "huajiangwin.firebasestorage.app",
+            messagingSenderId: "916982407278",
+            appId: "1:916982407278:web:32326feaa376ae7e69867f",
+            measurementId: "G-4V61KLQ6PF"
+        };
+
+        // Initialize Firebase
+        console.log('初始化 Firebase...');
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        console.log('Firebase 初始化成功');
+
+        // Make database available globally
+        window.db = db;
+        window.firestoreActions = {
+            collection,
+            addDoc,
+            getDocs,
+            doc,
+            updateDoc,
+            deleteDoc,
+            query,
+            orderBy,
+            onSnapshot,
+            where
+        };
+        
+        // 觸發應用初始化
+        window.dispatchEvent(new Event('firebaseReady'));
+        console.log('Firebase 全域變數設置完成');
+    </script>
+    <script src="script.js"></script>
+</body>
+
+</html>
